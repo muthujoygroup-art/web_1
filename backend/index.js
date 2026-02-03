@@ -17,17 +17,17 @@ if (Config.ip) Config.mediasoup.webRtcTransport.listenIps[0].ip = Config.ip;
 app.use((req, res, next) => (store.connected ? next() : res.status(500).send('Database not available.')));
 
 app.use(express.static(`${__dirname}/../frontend`));
-app.use('/login', express.static(`${__dirname}/../frontend`));
-app.use('/login/*', express.static(`${__dirname}/../frontend`));
-app.use('/admin', express.static(`${__dirname}/../frontend`));
-app.use('/room/*', express.static(`${__dirname}/../frontend`));
-app.use('/meeting/*', express.static(`${__dirname}/../frontend`));
+app.use('/login', express.static(`${__dirname}/../frontend/dist`));
+app.use('/login/*', express.static(`${__dirname}/../frontend/dist`));
+app.use('/admin', express.static(`${__dirname}/../frontend/dist`));
+app.use('/room/*', express.static(`${__dirname}/../frontend/dist`));
+app.use('/meeting/*', express.static(`${__dirname}/../frontend/dist`));
 
 // Add this after the static routes:
 const path = require('path'); // Add at top of file with other requires
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 const server = http.createServer(app);
