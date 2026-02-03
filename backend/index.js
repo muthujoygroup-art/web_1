@@ -23,6 +23,10 @@ app.use('/admin', express.static(`${__dirname}/../frontend/dist`));
 app.use('/room/*', express.static(`${__dirname}/../frontend/dist`));
 app.use('/meeting/*', express.static(`${__dirname}/../frontend/dist`));
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
+
 const server = http.createServer(app);
 store.app = app;
 store.config = Config;
