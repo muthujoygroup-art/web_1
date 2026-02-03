@@ -116,21 +116,20 @@ module.exports = () => {
   const mongooseConnect = () => {
     let connecting = setTimeout(() => console.log('Connecting to DB...'.yellow), 1000);
 
-    const { mongo } = store.config;
-    const uri =
-      mongo.uri ||
-      `mongodb${mongo.srv ? '+srv' : ''}://${mongo.username}:${encodeURIComponent(mongo.password)}@${mongo.hostname}:${
-        mongo.port
-      }/${mongo.database}?authSource=${mongo.authenticationDatabase}`;
-
+    // HARDCODED MongoDB URI - CHANGE THIS TO YOUR URI
+    const uri = 'mongodb+srv://cloverapp:CloverApp123@cluster0.osucpjy.mongodb.net/clover?retryWrites=true&w=majority';
+    
+    console.log('Using MongoDB URI:', uri.replace(/:[^@]*@/, ':****@'));
+    
     mongoose.set('strictQuery', false);
 
     mongoose
       .connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        ssl: false,
+        ssl: true, // Changed to true for MongoDB Atlas
         family: 4,
+        serverSelectionTimeoutMS: 10000,
       })
       .then(() => {
         clearTimeout(connecting);
@@ -157,7 +156,7 @@ module.exports = () => {
         store.connected = true;
       })
       .catch((err) => {
-        console.log(err);
+        console.log('Database connection error:', err.message);
         clearTimeout(connecting);
         console.log('Unable to connect to DB'.red);
         console.log('Retrying in 10 seconds'.yellow);
