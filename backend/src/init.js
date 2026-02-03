@@ -116,13 +116,13 @@ module.exports = () => {
   const mongooseConnect = () => {
     let connecting = setTimeout(() => console.log('Connecting to DB...'.yellow), 1000);
 
-    const { mongo } = store.config;
-    const uri =
-      mongo.uri ||
-      `mongodb${mongo.srv ? '+srv' : ''}://${mongo.username}:${encodeURIComponent(mongo.password)}@${mongo.hostname}:${
-        mongo.port
-      }/${mongo.database}?authSource=${mongo.authenticationDatabase}`;
+    // FIXED: Use process.env.MONGO_URI first, fallback to config
+    const uri = process.env.MONGO_URI || 
+      (store.config.mongo && store.config.mongo.uri) ||
+      'mongodb://localhost:27017/clover';
 
+    console.log('Database URI:', uri ? 'Set' : 'Not set');
+    
     mongoose.set('strictQuery', false);
 
     mongoose
@@ -157,7 +157,7 @@ module.exports = () => {
         store.connected = true;
       })
       .catch((err) => {
-        console.log(err);
+        console.log('Database connection error:', err.message);
         clearTimeout(connecting);
         console.log('Unable to connect to DB'.red);
         console.log('Retrying in 10 seconds'.yellow);
