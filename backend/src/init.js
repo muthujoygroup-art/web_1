@@ -116,23 +116,13 @@ module.exports = () => {
   const mongooseConnect = () => {
     let connecting = setTimeout(() => console.log('Connecting to DB...'.yellow), 1000);
 
-    // DEBUG: Log MONGO_URI details
-    console.log('=== DEBUG: Checking MONGO_URI ===');
-    console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
-    if (process.env.MONGO_URI) {
-      const masked = process.env.MONGO_URI.replace(/:[^@]*@/, ':****@');
-      console.log('Masked URI:', masked);
-      console.log('Contains /clover?:', process.env.MONGO_URI.includes('/clover'));
-      console.log('Starts with mongodb+srv?:', process.env.MONGO_URI.startsWith('mongodb+srv://'));
-      console.log('URI length:', process.env.MONGO_URI.length);
-    }
-    console.log('================================');
+    const { mongo } = store.config;
+    const uri =
+      mongo.uri ||
+      `mongodb${mongo.srv ? '+srv' : ''}://${mongo.username}:${encodeURIComponent(mongo.password)}@${mongo.hostname}:${
+        mongo.port
+      }/${mongo.database}?authSource=${mongo.authenticationDatabase}`;
 
-    // FIXED: Use process.env.MONGO_URI first, fallback to config
-    const uri = process.env.MONGO_URI || 
-      (store.config.mongo && store.config.mongo.uri) ||
-      'mongodb://localhost:27017/clover';
-    
     mongoose.set('strictQuery', false);
 
     mongoose
@@ -141,7 +131,6 @@ module.exports = () => {
         useUnifiedTopology: true,
         ssl: false,
         family: 4,
-        serverSelectionTimeoutMS: 10000, // 10 second timeout
       })
       .then(() => {
         clearTimeout(connecting);
@@ -164,17 +153,11 @@ module.exports = () => {
 
         Meeting.updateMany({}, { $set: { peers: [] } }).catch((err) => console.log(err));
 
-        console.log('✅ Connected to DB'.green);
+        console.log('Connected to DB'.green);
         store.connected = true;
       })
       .catch((err) => {
-        console.log('=== DATABASE ERROR DETAILS ===');
-        console.log('Error name:', err.name);
-        console.log('Error message:', err.message);
-        console.log('Error code:', err.code || 'No code');
-        console.log('Full error:', JSON.stringify(err, null, 2));
-        console.log('=============================');
-        
+        console.log(err);
         clearTimeout(connecting);
         console.log('Unable to connect to DB'.red);
         console.log('Retrying in 10 seconds'.yellow);
